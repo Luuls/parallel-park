@@ -12,6 +12,6 @@
  *   NÃO EDITAR ESSAS VARIAVEIS   *
  *          ATENÇÃO               *
  *********************************/
-extern Queue *gate_queue;
+extern Queue* gate_queue;
 
 #endif

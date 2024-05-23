@@ -23,7 +23,7 @@ typedef struct config {
  *******************************/
 
 extern config_t config;
-extern config_t parse(int argc, char **argv);
+extern config_t parse(int argc, char** argv);
 
 /*******************************
  *          ATENÇÃO            *

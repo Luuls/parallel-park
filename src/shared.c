@@ -11,4 +11,4 @@
  *   NÃO EDITAR ESSAS VARIAVEIS   *
  *          ATENÇÃO               *
  *********************************/
-Queue *gate_queue = NULL;
+Queue* gate_queue = NULL;

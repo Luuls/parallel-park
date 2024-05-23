@@ -14,7 +14,7 @@
 
 
 // Thread que implementa o fluxo do cliente no parque.
-void *enjoy(void *arg){
+void* enjoy(void* arg){
 
     //Sua lógica aqui
 
@@ -24,17 +24,17 @@ void *enjoy(void *arg){
 }
 
 // Funcao onde o cliente compra as moedas para usar os brinquedos
-void buy_coins(client_t *self){
+void buy_coins(client_t* self){
     // Sua lógica aqui
 }
 
 // Função onde o cliente espera a liberacao da bilheteria para adentrar ao parque.
-void wait_ticket(client_t *self){
+void wait_ticket(client_t* self){
     // Sua lógica aqui
 }
 
 // Funcao onde o cliente entra na fila da bilheteria
-void queue_enter(client_t *self){
+void queue_enter(client_t* self){
     // Sua lógica aqui.
     debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
 
@@ -46,7 +46,7 @@ void queue_enter(client_t *self){
 }
 
 // Essa função recebe como argumento informações sobre o cliente e deve iniciar os clientes.
-void open_gate(client_args *args){
+void open_gate(client_args* args){
     // Sua lógica aqui
 }
 

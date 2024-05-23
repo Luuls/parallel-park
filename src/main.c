@@ -25,10 +25,11 @@ void destroy_main_queue(){
 }
 
 // Inicia a instância dos clientes
-client_t **init_clients(int number, int toy_number, toy_t **toys){
-    client_t **clients = malloc(number * sizeof(client_t *));
+client_t** init_clients(int number, int toy_number, toy_t** toys){
+    client_t** clients = malloc(number * sizeof(client_t*));
+
     for (int i = 0; i < number; i++){
-        clients[i] = (client_t *) malloc(sizeof(client_t));
+        clients[i] = (client_t*) malloc(sizeof(client_t));
         clients[i]->id = i + 1;
         clients[i]->coins = 0;
         clients[i]->toys = toys;
@@ -38,10 +39,10 @@ client_t **init_clients(int number, int toy_number, toy_t **toys){
 }
 
 // Inicia a instância dos brinquedos
-toy_t **init_toys(int number){
-    toy_t **toys = malloc(number * sizeof(toy_t));
+toy_t** init_toys(int number){
+    toy_t** toys = malloc(number * sizeof(toy_t));
     for (int i = 0; i < number; i++){
-        toys[i] = (toy_t *) malloc(sizeof(toy_t));
+        toys[i] = (toy_t*) malloc(sizeof(toy_t));
         toys[i]->id = i + 1;
         toys[i]->capacity = rand() % (MAX_CAPACITY_TOY - 1) + MIN_CAPACITY_TOY;
     }
@@ -49,17 +50,17 @@ toy_t **init_toys(int number){
 }
 
 // Inicia a instância dos funcionarios
-ticket_t ** init_tickets(int number){
-    ticket_t **tickets = malloc(number * sizeof(toy_t));
+ticket_t**  init_tickets(int number){
+    ticket_t** tickets = malloc(number * sizeof(toy_t));
     for (int i = 0; i < number; i++){
-        tickets[i] = (ticket_t *) malloc(sizeof(ticket_t));
+        tickets[i] = (ticket_t*) malloc(sizeof(ticket_t));
         tickets[i]->id = i + 1;
     }
     return tickets;
 }
 
  // Desaloca os clientes
-void finish_clients(client_t **clients, int number_clients){
+void finish_clients(client_t** clients, int number_clients){
     for (int i = 0; i < number_clients; i++){
         free(clients[i]);
     }
@@ -67,7 +68,7 @@ void finish_clients(client_t **clients, int number_clients){
 }
 
  // Desaloca os brinquedos
-void finish_toys(toy_t **toys, int number_toys){
+void finish_toys(toy_t** toys, int number_toys){
     for (int i = 0; i < number_toys; i++){
         free(toys[i]);
     }
@@ -75,7 +76,7 @@ void finish_toys(toy_t **toys, int number_toys){
 }
 
  // Desaloca os funcionarios da bilheteria
-void finish_tickets(ticket_t **tickets, int number_clients){
+void finish_tickets(ticket_t** tickets, int number_clients){
     for (int i = 0; i < number_clients; i++){
         free(tickets[i]);
     }
@@ -88,11 +89,11 @@ void finish_tickets(ticket_t **tickets, int number_clients){
  *                    ATENÇÃO                     *
  *************************************************/
 
-int main(int argc, char *argv[]){
+int main(int argc, char* argv[]){
 
-    client_args *cli_args = (client_args *) malloc(sizeof(client_args));
-    tickets_args *ticket_args = (tickets_args *) malloc(sizeof(tickets_args));
-    toy_args *toys_args = (toy_args *) malloc(sizeof(toy_args));
+    client_args* cli_args = (client_args*) malloc(sizeof(client_args));
+    tickets_args* ticket_args = (tickets_args*) malloc(sizeof(tickets_args));
+    toy_args* toys_args = (toy_args*) malloc(sizeof(toy_args));
 
     config_t _config = parse(argc, argv); // ./program -p (pessoas) -t (brinquedos) -g (bilheterias) -s (semente) -h (ajuda)
     srand(_config.seed); //Alimentando o gerador pseudo-aleatorio.
@@ -103,15 +104,15 @@ int main(int argc, char *argv[]){
     init_main_queue();
     
     // Inicializa os brinquedos.
-    toy_t **toys = init_toys(_config.toys);
+    toy_t** toys = init_toys(_config.toys);
 
     // Inicializa os clientes.
-    client_t **clients = init_clients(_config.clients, _config.toys, toys);
+    client_t** clients = init_clients(_config.clients, _config.toys, toys);
     cli_args->clients = clients;
     cli_args->n = _config.clients;
 
     // Inicializa os funcionarios da bilheteria.
-    ticket_t **tickets = init_tickets(_config.toys);
+    ticket_t** tickets = init_tickets(_config.toys);
     ticket_args->tickets = tickets;
     ticket_args->n = _config.tickets;
     

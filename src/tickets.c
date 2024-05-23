@@ -13,7 +13,7 @@
 
 
 // Thread que implementa uma bilheteria
-void *sell(void *args){
+void* sell(void* args){
 
     debug("[INFO] - Bilheteria Abriu!\n");
 
@@ -21,7 +21,7 @@ void *sell(void *args){
 }
 
 // Essa função recebe como argumento informações sobre a bilheteria e deve iniciar os atendentes.
-void open_tickets(tickets_args *args){
+void open_tickets(tickets_args* args){
     // Sua lógica aqui
 }
 

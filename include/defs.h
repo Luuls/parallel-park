@@ -36,24 +36,24 @@ typedef struct client{
   int id;                   // O id do cliente.
   int coins;                // Quantidade de moedas do cliente.
   int number_toys;          // Numero de brinquedos disponiveis.
-  toy_t **toys;             // (Copy) Array de brinquedos.
+  toy_t** toys;             // (Copy) Array de brinquedos.
 } client_t;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
 typedef struct{
-  ticket_t **tickets;        // Array de funcionarios.                       
+  ticket_t** tickets;        // Array de funcionarios.                       
   int n;                    // Quantidade de funcionários da bilheteria.
 } tickets_args;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
 typedef struct{
-  toy_t **toys;             // Array de brinquedos.
+  toy_t** toys;             // Array de brinquedos.
   int n;                    // Quantidade de brinquedos.
 } toy_args;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
 typedef struct{
-  client_t **clients;       // Array de clientes.
+  client_t** clients;       // Array de clientes.
   int n;                    // Quantidade de clientes.
 } client_args;
 
@@ -67,13 +67,13 @@ typedef struct{
 // Estrutura da fila
 typedef struct node {
   int data;                 // Dado da fila.
-  struct node *next;        // Objeto do proximo item da fila.
+  struct node* next;        // Objeto do proximo item da fila.
 } Node;
 
 // Fila
 typedef struct queue {
-  Node *front;              // Primeiro elemento da fila.
-  Node *rear;               // Ultimo elemento da fila.
+  Node* front;              // Primeiro elemento da fila.
+  Node* rear;               // Ultimo elemento da fila.
 } Queue;
 
 #if DEBUG

@@ -9,8 +9,8 @@
  *******************************/
 
 // Cria uma nova fila
-Queue *create_queue() {
-  Queue *queue = (Queue *)malloc(sizeof(Queue));
+Queue* create_queue(void) {
+  Queue *queue = (Queue*) malloc(sizeof(Queue));
   queue->front = NULL;
   queue->rear = NULL;
   return queue;
@@ -23,7 +23,7 @@ Queue *create_queue() {
  *******************************/
 
 // Verifica se a fila está vazia
-int is_queue_empty(Queue *queue) {
+int is_queue_empty(Queue* queue) {
   return (queue->front == NULL);
 }
 
@@ -34,8 +34,8 @@ int is_queue_empty(Queue *queue) {
  *******************************/
 
 // Enfileira um elemento
-void enqueue(Queue *queue, int data) {
-  Node *newNode = (Node *)malloc(sizeof(Node));
+void enqueue(Queue* queue, int data) {
+  Node* newNode = (Node*) malloc(sizeof(Node));
   newNode->data = data;
   newNode->next = NULL;
 
@@ -55,13 +55,13 @@ void enqueue(Queue *queue, int data) {
  *******************************/
 
 // Desenfileira um elemento
-int dequeue(Queue *queue) {
+int dequeue(Queue* queue) {
   if (is_queue_empty(queue)) {
     return -1;
   }
 
   int data = queue->front->data;
-  Node *temp = queue->front;
+  Node* temp = queue->front;
   queue->front = queue->front->next;
 
   if (queue->front == NULL) {
@@ -79,12 +79,12 @@ int dequeue(Queue *queue) {
  *******************************/
 
 // Mostra a fila
-void print_queue(Queue *queue) {
+void print_queue(Queue* queue) {
   if (is_queue_empty(queue)) {
     return;
   }
 
-  Node *temp = queue->front;
+  Node* temp = queue->front;
   while (temp != NULL) {
     printf("%d ", temp->data);
     temp = temp->next;
@@ -100,7 +100,7 @@ void print_queue(Queue *queue) {
  *******************************/
 
 // Destroi a fila
-void destroy_queue(Queue *queue) {
+void destroy_queue(Queue* queue) {
   while (!is_queue_empty(queue)) {
     dequeue(queue);
   }

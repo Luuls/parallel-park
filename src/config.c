@@ -16,7 +16,7 @@
  *          ATENÇÃO            *
  *******************************/
 
-config_t parse(int argc, char **argv)
+config_t parse(int argc, char** argv)
 {
     int c;
     config_t config = {1, 5, 2, 4};

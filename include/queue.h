@@ -9,12 +9,12 @@
  *          ATENÇÃO            *
  *******************************/
 
-Queue *create_queue();
-int is_queue_empty(Queue *queue);
-void enqueue(Queue *queue, int data);
-int dequeue(Queue *queue);
-void print_queue(Queue *queue);
-void destroy_queue(Queue *queue);
+Queue* create_queue();
+int is_queue_empty(Queue* queue);
+void enqueue(Queue* queue, int data);
+int dequeue(Queue* queue);
+void print_queue(Queue* queue);
+void destroy_queue(Queue* queue);
 
 /*******************************
  *          ATENÇÃO            *
