@@ -14,7 +14,7 @@
 
 
 // Thread que o brinquedo vai usar durante toda a simulacao do sistema
-void* turn_on(void* args){
+void* turn_on(void* args) {
 
     debug("[ON] - O brinquedo  [%d] foi ligado.\n", rand()); // Altere para o id do brinquedo
 
@@ -25,11 +25,11 @@ void* turn_on(void* args){
 
 
 // Essa função recebe como argumento informações e deve iniciar os brinquedos.
-void open_toys(toy_args* args){
+void open_toys(toy_args* args) {
     // Sua lógica aqui
 }
 
 // Desligando os brinquedos
-void close_toys(){
+void close_toys() {
     // Sua lógica aqui
 }

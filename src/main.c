@@ -15,20 +15,20 @@
 #include "toy.h"
 
 // Inicia a fila
-void init_main_queue(){
+void init_main_queue() {
     gate_queue = create_queue();
 }
 
 // Destroi a fila
-void destroy_main_queue(){
+void destroy_main_queue() {
     destroy_queue(gate_queue);
 }
 
 // Inicia a instância dos clientes
-client_t** init_clients(int number, int toy_number, toy_t** toys){
+client_t** init_clients(int number, int toy_number, toy_t** toys) {
     client_t** clients = malloc(number * sizeof(client_t*));
 
-    for (int i = 0; i < number; i++){
+    for (int i = 0; i < number; i++) {
         clients[i] = (client_t*) malloc(sizeof(client_t));
         clients[i]->id = i + 1;
         clients[i]->coins = 0;
@@ -39,9 +39,9 @@ client_t** init_clients(int number, int toy_number, toy_t** toys){
 }
 
 // Inicia a instância dos brinquedos
-toy_t** init_toys(int number){
+toy_t** init_toys(int number) {
     toy_t** toys = malloc(number * sizeof(toy_t));
-    for (int i = 0; i < number; i++){
+    for (int i = 0; i < number; i++) {
         toys[i] = (toy_t*) malloc(sizeof(toy_t));
         toys[i]->id = i + 1;
         toys[i]->capacity = rand() % (MAX_CAPACITY_TOY - 1) + MIN_CAPACITY_TOY;
@@ -50,9 +50,9 @@ toy_t** init_toys(int number){
 }
 
 // Inicia a instância dos funcionarios
-ticket_t**  init_tickets(int number){
+ticket_t** init_tickets(int number) {
     ticket_t** tickets = malloc(number * sizeof(toy_t));
-    for (int i = 0; i < number; i++){
+    for (int i = 0; i < number; i++) {
         tickets[i] = (ticket_t*) malloc(sizeof(ticket_t));
         tickets[i]->id = i + 1;
     }
@@ -60,24 +60,24 @@ ticket_t**  init_tickets(int number){
 }
 
  // Desaloca os clientes
-void finish_clients(client_t** clients, int number_clients){
-    for (int i = 0; i < number_clients; i++){
+void finish_clients(client_t** clients, int number_clients) {
+    for (int i = 0; i < number_clients; i++) {
         free(clients[i]);
     }
     free(clients);
 }
 
  // Desaloca os brinquedos
-void finish_toys(toy_t** toys, int number_toys){
-    for (int i = 0; i < number_toys; i++){
+void finish_toys(toy_t** toys, int number_toys) {
+    for (int i = 0; i < number_toys; i++) {
         free(toys[i]);
     }
     free(toys);
 }
 
  // Desaloca os funcionarios da bilheteria
-void finish_tickets(ticket_t** tickets, int number_clients){
-    for (int i = 0; i < number_clients; i++){
+void finish_tickets(ticket_t** tickets, int number_clients) {
+    for (int i = 0; i < number_clients; i++) {
         free(tickets[i]);
     }
     free(tickets);
@@ -89,8 +89,7 @@ void finish_tickets(ticket_t** tickets, int number_clients){
  *                    ATENÇÃO                     *
  *************************************************/
 
-int main(int argc, char* argv[]){
-
+int main(int argc, char* argv[]) {
     client_args* cli_args = (client_args*) malloc(sizeof(client_args));
     tickets_args* ticket_args = (tickets_args*) malloc(sizeof(tickets_args));
     toy_args* toys_args = (toy_args*) malloc(sizeof(toy_args));
@@ -128,7 +127,7 @@ int main(int argc, char* argv[]){
     open_tickets(ticket_args);
 
     // Os turistas saem do parque.
-    close_gate();
+    close_gate(cli_args);
     
     // A bilheteria fecha.
     close_tickets();

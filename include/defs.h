@@ -19,40 +19,41 @@
 
 
 /* Adicione as estruturas de sincronização que achar necessárias */
-typedef struct ticket{
+typedef struct ticket {
   pthread_t thread;         // A thread do funcionário que fica na bilheteria.
   int id;                   // O id do funcionario que fica na bilheteria.
 } ticket_t;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
-typedef struct toy{
+typedef struct toy {
   int id;                   // O id de um brinquedo.
   int capacity;             // A capacidade total de um brinquedo.
   pthread_t thread;         // A thread de um brinquedo.
 } toy_t;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
-typedef struct client{
+typedef struct client {
   int id;                   // O id do cliente.
   int coins;                // Quantidade de moedas do cliente.
   int number_toys;          // Numero de brinquedos disponiveis.
   toy_t** toys;             // (Copy) Array de brinquedos.
+  pthread_t thread;         // A thread de um cliente.
 } client_t;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
-typedef struct{
+typedef struct {
   ticket_t** tickets;        // Array de funcionarios.                       
   int n;                    // Quantidade de funcionários da bilheteria.
 } tickets_args;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
-typedef struct{
+typedef struct {
   toy_t** toys;             // Array de brinquedos.
   int n;                    // Quantidade de brinquedos.
 } toy_args;
 
 /* Adicione as estruturas de sincronização que achar necessárias */
-typedef struct{
+typedef struct {
   client_t** clients;       // Array de clientes.
   int n;                    // Quantidade de clientes.
 } client_args;

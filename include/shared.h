@@ -14,4 +14,8 @@
  *********************************/
 extern Queue* gate_queue;
 
+extern pthread_mutex_t gate_queue_mutex;
+
+extern sem_t* clients_semaphores;
+
 #endif
