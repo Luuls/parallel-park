@@ -26,10 +26,8 @@ void* sell(void* args) {
 
         int id = dequeue(gate_queue);
         pthread_mutex_unlock(&gate_queue_mutex);
-
         sem_post(&clients_semaphores[id - 1]);
     }
-
     pthread_exit(NULL);
 }
 
@@ -46,9 +44,9 @@ void open_tickets(tickets_args* args) {
 // Essa função deve finalizar a bilheteria
 void close_tickets(tickets_args* args) {
     //Sua lógica aqui
-    pthread_mutex_destroy(&gate_queue_mutex);
 
     for (int i = 0; i < args->n; i++) {
         pthread_join(args->tickets[i]->thread, NULL);
     }
+    pthread_mutex_destroy(&gate_queue_mutex);
 }

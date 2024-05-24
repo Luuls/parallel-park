@@ -28,6 +28,7 @@ void wait_ticket(client_t* self) {
 // Funcao onde o cliente entra na fila da bilheteria
 void queue_enter(client_t* self) {
     // Sua lógica aqui.
+
     enqueue(gate_queue, self->id);
 
     debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
@@ -44,7 +45,6 @@ void* enjoy(void* arg) {
     //Sua lógica aqui
     client_t* self = (client_t*) arg;
 
-    queue_enter(self);
     wait_ticket(self);
 
     debug("[EXIT] - O turista saiu do parque.\n");
@@ -54,8 +54,12 @@ void* enjoy(void* arg) {
 // Essa função recebe como argumento informações sobre o cliente e deve iniciar os clientes.
 void open_gate(client_args* args) {
     // Sua lógica aqui
-    clients_semaphores = malloc(args->n * sizeof(sem_t));
 
+    for (int i = 0; i < args->n; i++) {
+        queue_enter(args->clients[i]);
+    }
+
+    clients_semaphores = malloc(args->n * sizeof(sem_t));
     for (int i = 0; i < args->n; i++) {
         sem_init(&clients_semaphores[i], 0, 0);
         pthread_create(&args->clients[i]->thread, NULL, enjoy, args->clients[i]);
@@ -65,13 +69,11 @@ void open_gate(client_args* args) {
 // Essa função deve finalizar os clientes
 void close_gate(client_args* args) {
    //Sua lógica aqui
-
     for (int i = 0; i < args->n; i++) {
         pthread_join(args->clients[i]->thread, NULL);
     }
-
     for (int i = 0; i < args->n; i++) {
-        sem_destroy(&clients_semaphores[i]);
+        sem_destroy(&clients_semaphores[args->clients[i]->id - 1]);
     }
     free(clients_semaphores);
 }
