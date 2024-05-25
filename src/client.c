@@ -12,40 +12,40 @@
 #include "queue.h"
 #include "shared.h"
 
-// Funcao onde o cliente compra as moedas para usar os brinquedos
+
+// Função onde o cliente compra as moedas para usar os brinquedos
 void buy_coins(client_t* self) {
-    // Sua lógica aqui
     self->coins = rand() % (MAX_COINS) + 1;
 }
 
 // Função onde o cliente espera a liberacao da bilheteria para adentrar ao parque.
 void wait_ticket(client_t* self) {
-    // Sua lógica aqui
-    sem_wait(&clients_semaphores[self->id - 1]);
-    debug("[ENTER] - Turista [%d] liberado para o parque.\n", self->id);
+    // Aguarda a liberação da bilheteria
+    sem_wait(&clients_access_controls[self->id - 1]);
 }
 
-// Funcao onde o cliente entra na fila da bilheteria
+// Função onde o cliente entra na fila da bilheteria
 void queue_enter(client_t* self) {
-    // Sua lógica aqui.
+    pthread_mutex_lock(&gate_queue_mutex);
+    enqueue(gate_queue, self->id);  // O cliente entra na fila do parque
+    pthread_mutex_unlock(&gate_queue_mutex);
 
-    enqueue(gate_queue, self->id);
+    sem_post(&clients_in_queue_sem);  // Sinalizamos para a bilheteria que um cliente entrou na fila
 
     debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
+    wait_ticket(self);  // Aguarda a liberação de alguém na bilheteria
 
-    // Sua lógica aqui.
-    buy_coins(self);
-
-    // Sua lógica aqui.
+    buy_coins(self);  // Um funcionário finalmente atende o cliente e ele compra suas moedas
     debug("[CASH] - Turista [%d] comprou [%d] moedas.\n", self->id, self->coins);
 }
 
 // Thread que implementa o fluxo do cliente no parque.
 void* enjoy(void* arg) {
-    //Sua lógica aqui
     client_t* self = (client_t*) arg;
 
-    wait_ticket(self);
+    queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
+
+    debug("Enjoying park...\n");  // O cliente saiu da fila e agora está dentro do parque.
 
     debug("[EXIT] - O turista saiu do parque.\n");
     pthread_exit(NULL);
@@ -53,27 +53,37 @@ void* enjoy(void* arg) {
 
 // Essa função recebe como argumento informações sobre o cliente e deve iniciar os clientes.
 void open_gate(client_args* args) {
-    // Sua lógica aqui
+    /*
+    Função de abertura dos portões, permitindo a entrada de clientes. Inicializamos
+    gate_queue_mutex, clients_in_queue_sem, remaining_clients, remaining_clients_mutex e clients_access_controls,
+    estruturas que nos ajudarão a sincronizar a entrada dos clientes no parque (ver shared.c).
+    */
+
+    pthread_mutex_init(&gate_queue_mutex, NULL);
+    sem_init(&clients_in_queue_sem, 0, 0);
+
+    remaining_clients = args->n;
+    pthread_mutex_init(&remaining_clients_mutex, NULL);
+
+    clients_access_controls = malloc(args->n * sizeof(sem_t));
 
     for (int i = 0; i < args->n; i++) {
-        queue_enter(args->clients[i]);
-    }
-
-    clients_semaphores = malloc(args->n * sizeof(sem_t));
-    for (int i = 0; i < args->n; i++) {
-        sem_init(&clients_semaphores[i], 0, 0);
+        sem_init(&clients_access_controls[i], 0, 0);
         pthread_create(&args->clients[i]->thread, NULL, enjoy, args->clients[i]);
     }
 }
 
 // Essa função deve finalizar os clientes
 void close_gate(client_args* args) {
-   //Sua lógica aqui
+   /*
+    Esperamos os clientes terminarem de aproveitar o parque e destruímos os semáforos
+    associados a eles.
+   */
+
     for (int i = 0; i < args->n; i++) {
         pthread_join(args->clients[i]->thread, NULL);
+        sem_destroy(&clients_access_controls[args->clients[i]->id - 1]);
     }
-    for (int i = 0; i < args->n; i++) {
-        sem_destroy(&clients_semaphores[args->clients[i]->id - 1]);
-    }
-    free(clients_semaphores);
+
+    free(clients_access_controls);
 }

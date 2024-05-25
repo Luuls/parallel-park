@@ -14,28 +14,32 @@
 
 // Thread que implementa uma bilheteria
 void* sell(void* args) {
-
     debug("[INFO] - Bilheteria Abriu!\n");
 
     while (TRUE) {
-        pthread_mutex_lock(&gate_queue_mutex);
-        if (is_queue_empty(gate_queue)) {
-            pthread_mutex_unlock(&gate_queue_mutex);
+        pthread_mutex_lock(&remaining_clients_mutex);
+        if (remaining_clients == 0) {  // Os últimos clientes foram/vão ser atendidos. O funcionário encerra seu turno
+            pthread_mutex_unlock(&remaining_clients_mutex);
             break;
         }
+        remaining_clients--;  //
+        pthread_mutex_unlock(&remaining_clients_mutex);
 
-        int id = dequeue(gate_queue);
+        sem_wait(&clients_in_queue_sem);  // Aguarda a chegada de um cliente na fila
+
+        pthread_mutex_lock(&gate_queue_mutex);
+        int id = dequeue(gate_queue);  // Atende o cliente cujo ID está na frente da fila
         pthread_mutex_unlock(&gate_queue_mutex);
-        sem_post(&clients_semaphores[id - 1]);
+
+        sem_post(&clients_access_controls[id - 1]);  // Libera o cliente para entrar no parque
     }
+
     pthread_exit(NULL);
 }
 
 // Essa função recebe como argumento informações sobre a bilheteria e deve iniciar os atendentes.
 void open_tickets(tickets_args* args) {
-    // Sua lógica aqui
-    pthread_mutex_init(&gate_queue_mutex, NULL);
-
+    // Cria as threads dos atendentes
     for (int i = 0; i < args->n; i++) {
         pthread_create(&args->tickets[i]->thread, NULL, sell, NULL);
     }
@@ -43,10 +47,12 @@ void open_tickets(tickets_args* args) {
 
 // Essa função deve finalizar a bilheteria
 void close_tickets(tickets_args* args) {
-    //Sua lógica aqui
-
+    // Espera todas as threads dos atendentes finalizarem e destrói mutexes/semáforos
     for (int i = 0; i < args->n; i++) {
         pthread_join(args->tickets[i]->thread, NULL);
     }
+
     pthread_mutex_destroy(&gate_queue_mutex);
+    sem_destroy(&clients_in_queue_sem);
+    pthread_mutex_destroy(&remaining_clients_mutex);
 }
