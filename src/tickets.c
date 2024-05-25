@@ -14,7 +14,8 @@
 
 // Thread que implementa uma bilheteria
 void* sell(void* args) {
-    debug("[INFO] - Bilheteria Abriu!\n");
+    ticket_t* ticket = (ticket_t*) args;
+    debug("[INFO] - Bilheteria [%d] abriu!\n", ticket->id);
 
     while (TRUE) {
         pthread_mutex_lock(&remaining_clients_mutex);
@@ -34,6 +35,7 @@ void* sell(void* args) {
         sem_post(&clients_access_controls[id - 1]);  // Libera o cliente para entrar no parque
     }
 
+    debug("[INFO] - Bilheteria [%d] fechou!\n", ticket->id);
     pthread_exit(NULL);
 }
 
@@ -41,7 +43,7 @@ void* sell(void* args) {
 void open_tickets(tickets_args* args) {
     // Cria as threads dos atendentes
     for (int i = 0; i < args->n; i++) {
-        pthread_create(&args->tickets[i]->thread, NULL, sell, NULL);
+        pthread_create(&args->tickets[i]->thread, NULL, sell, (void*) args->tickets[i]);
     }
 }
 

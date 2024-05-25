@@ -45,9 +45,9 @@ void* enjoy(void* arg) {
 
     queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
 
-    debug("Enjoying park...\n");  // O cliente saiu da fila e agora está dentro do parque.
+    debug("Turista [%d] está aproveitando o parque...\n", self->id);  // O cliente saiu da fila e agora está dentro do parque.
 
-    debug("[EXIT] - O turista saiu do parque.\n");
+    debug("[EXIT] - O turista [%d] saiu do parque.\n", self->id);
     pthread_exit(NULL);
 }
 
