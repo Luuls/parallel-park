@@ -8,7 +8,7 @@
 extern pthread_mutex_t gate_queue_mutex;
 extern sem_t clients_in_queue_sem;
 
-extern sem_t* clients_access_controls;
+extern sem_t* clients_ticket_booth_access;
 
 extern int remaining_clients;
 extern pthread_mutex_t remaining_clients_mutex;
