@@ -12,7 +12,7 @@
  *   NÃO EDITAR ESSAS FUNÇÕES   *
  *          ATENÇÃO             *
  *******************************/
-void open_tickets(tickets_args *args);
+void open_tickets(tickets_args* args);
 void close_tickets();
 
 #endif

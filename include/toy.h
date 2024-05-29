@@ -12,7 +12,7 @@
  *   NÃO EDITAR ESSAS FUNÇÕES   *
  *          ATENÇÃO             *
  *******************************/
-void open_toys(toy_args *args);
+void open_toys(toy_args* args);
 void close_toys();
 
 #endif
