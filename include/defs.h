@@ -31,6 +31,8 @@ typedef struct toy {
   pthread_t thread;         // A thread de um brinquedo.
   sem_t toy_perform_actions; // Semáforo para permitir que um brinquedo realize ações.
   sem_t clients_wanting_to_ride; // Semáforo para permitir que um cliente brinque.
+  int clients_to_enter_toy;
+  pthread_mutex_t clients_to_enter_toy_mutex;
 } toy_t;
 
 /* Adicione as estruturas de sincronização que achar necessárias */

@@ -31,10 +31,19 @@ void enjoy_toys(client_t* self) {
         toy_t* toy = self->toys[rand() % self->number_toys];  // O cliente escolhe um brinquedo aleatório
         debug("[TOY] - Turista [%d] escolheu brincar no brinquedo [%d].\n", self->id, toy->id);
 
-        sem_post(&toy->toy_perform_actions);  // Sinalizamos para o brinquedo que um cliente quer brincar
-
         self->coins--;  // O cliente gasta uma moeda para brincar
         debug("[COINS] - Turista [%d] gastou uma moeda. Restam [%d] moedas.\n", self->id, self->coins);
+    
+        debug("[WAITING] - Turista [%d] está aguardando para brincar no brinquedo [%d].\n", self->id, toy->id);
+        pthread_mutex_lock(&toy->clients_to_enter_toy_mutex);
+        toy->clients_to_enter_toy++;
+        pthread_mutex_unlock(&toy->clients_to_enter_toy_mutex);
+
+        sem_post(&toy->toy_perform_actions);  // Sinalizamos para o brinquedo que um cliente quer brincar
+
+        sem_wait(&toy->clients_wanting_to_ride);  // Aguarda a liberação do brinquedo
+        debug("[TOY] - Turista [%d] foi liberado para entrar no brinquedo [%d].\n", self->id, toy->id);
+
     }
 }
 
@@ -65,7 +74,7 @@ void* park_employee_action(void* arg) {
 
         pthread_mutex_lock(&clients_to_leave_mutex);
         clients_to_leave--;
-
+        
         if (clients_to_leave == 0) {
             pthread_mutex_unlock(&clients_to_leave_mutex);
 
