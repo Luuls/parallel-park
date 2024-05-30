@@ -35,7 +35,7 @@
 export VERBOSE ?= false
 
 # Release Version?
-export RELEASE ?= true
+export RELEASE ?= false
 
 # Name of the Executable
 export EXEC = program

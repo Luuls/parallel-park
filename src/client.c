@@ -24,6 +24,16 @@ void wait_ticket(client_t* self) {
     sem_wait(&clients_ticket_booth_access[self->id - 1]);
 }
 
+void enjoy_toys(client_t* self) {
+    while (self->coins > 0) {
+        toy_t* toy = self->toys[rand() % self->number_toys];  // O cliente escolhe um brinquedo aleatório
+        debug("[TOY] - Turista [%d] escolheu brincar no brinquedo [%d].\n", self->id, toy->id);
+
+        self->coins--;  // O cliente gasta uma moeda para brincar
+        debug("[COINS] - Turista [%d] gastou uma moeda. Restam [%d] moedas.\n", self->id, self->coins);
+    }
+}
+
 // Função onde o cliente entra na fila da bilheteria
 void queue_enter(client_t* self) {
     pthread_mutex_lock(&gate_queue_mutex);
@@ -44,6 +54,8 @@ void* enjoy(void* arg) {
     client_t* self = (client_t*) arg;
 
     queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
+
+    enjoy_toys(self);  // Depois de comprar moedas, o cliente aproveita os brinquedos
 
     debug("Turista [%d] está aproveitando o parque...\n", self->id);  // O cliente saiu da fila e agora está dentro do parque.
 

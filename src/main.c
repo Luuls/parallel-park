@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
     close_tickets(ticket_args);
 
     // Desligam os brinquedos.
-    close_toys();
+    close_toys(toys_args);
 
     // Desalocando funcionarios
     finish_tickets(tickets, _config.tickets);
