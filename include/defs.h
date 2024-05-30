@@ -54,6 +54,13 @@ typedef struct {
   int n;                    // Quantidade de brinquedos.
 } toy_args;
 
+typedef struct {
+  toy_t** toys;             // Array de brinquedos.
+  int n;                    // Quantidade de brinquedos.
+  sem_t employee_perform_action; // Semáforo para permitir que um funcionário realize ações.
+  pthread_t thread;           // A thread do funcionário.
+} park_employee_t;
+
 /* Adicione as estruturas de sincronização que achar necessárias */
 typedef struct {
   client_t** clients;       // Array de clientes.

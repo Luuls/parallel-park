@@ -18,13 +18,13 @@ void* sell(void* args) {
     debug("[INFO] - Bilheteria [%d] abriu!\n", ticket->id);
 
     while (TRUE) {
-        pthread_mutex_lock(&remaining_clients_mutex);
-        if (remaining_clients == 0) {  // Os últimos clientes foram/vão ser atendidos. O funcionário encerra seu turno
-            pthread_mutex_unlock(&remaining_clients_mutex);
+        pthread_mutex_lock(&clients_to_be_served_mutex);
+        if (clients_to_be_served == 0) {  // Os últimos clientes foram/vão ser atendidos. O funcionário encerra seu turno
+            pthread_mutex_unlock(&clients_to_be_served_mutex);
             break;
         }
-        remaining_clients--;
-        pthread_mutex_unlock(&remaining_clients_mutex);
+        clients_to_be_served--;
+        pthread_mutex_unlock(&clients_to_be_served_mutex);
 
         sem_wait(&clients_in_queue_sem);  // Aguarda a chegada de um cliente na fila
 
@@ -59,5 +59,5 @@ void close_tickets(tickets_args* args) {
 
     pthread_mutex_destroy(&gate_queue_mutex);
     sem_destroy(&clients_in_queue_sem);
-    pthread_mutex_destroy(&remaining_clients_mutex);
+    pthread_mutex_destroy(&clients_to_be_served_mutex);
 }

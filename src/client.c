@@ -12,6 +12,8 @@
 #include "queue.h"
 #include "shared.h"
 
+static park_employee_t park_employee;
+
 
 // Função onde o cliente compra as moedas para usar os brinquedos
 void buy_coins(client_t* self) {
@@ -28,6 +30,8 @@ void enjoy_toys(client_t* self) {
     while (self->coins > 0) {
         toy_t* toy = self->toys[rand() % self->number_toys];  // O cliente escolhe um brinquedo aleatório
         debug("[TOY] - Turista [%d] escolheu brincar no brinquedo [%d].\n", self->id, toy->id);
+
+        sem_post(&toy->toy_perform_actions);  // Sinalizamos para o brinquedo que um cliente quer brincar
 
         self->coins--;  // O cliente gasta uma moeda para brincar
         debug("[COINS] - Turista [%d] gastou uma moeda. Restam [%d] moedas.\n", self->id, self->coins);
@@ -49,15 +53,44 @@ void queue_enter(client_t* self) {
     debug("[CASH] - Turista [%d] comprou [%d] moedas.\n", self->id, self->coins);
 }
 
+void leave_park(void) {
+    sem_post(&park_employee.employee_perform_action);
+}
+
+void* park_employee_action(void* arg) {
+    park_employee_t* self = (park_employee_t*) arg;
+
+    while (TRUE) {
+        sem_wait(&self->employee_perform_action);  // Aguarda a ação do funcionário
+
+        pthread_mutex_lock(&clients_to_leave_mutex);
+        clients_to_leave--;
+
+        if (clients_to_leave == 0) {
+            pthread_mutex_unlock(&clients_to_leave_mutex);
+
+            for (int i = 0; i < self->n; i++) {
+                sem_post(&self->toys[i]->toy_perform_actions);
+            }
+            break;
+        }
+        pthread_mutex_unlock(&clients_to_leave_mutex);
+    }
+
+    pthread_exit(NULL);
+}
+
 // Thread que implementa o fluxo do cliente no parque.
 void* enjoy(void* arg) {
     client_t* self = (client_t*) arg;
 
     queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
 
+    debug("Turista [%d] está aproveitando o parque...\n", self->id);  // O cliente saiu da fila e agora está dentro do parque.
+
     enjoy_toys(self);  // Depois de comprar moedas, o cliente aproveita os brinquedos
 
-    debug("Turista [%d] está aproveitando o parque...\n", self->id);  // O cliente saiu da fila e agora está dentro do parque.
+    leave_park();
 
     debug("[EXIT] - O turista [%d] saiu do parque.\n", self->id);
     pthread_exit(NULL);
@@ -75,10 +108,18 @@ void open_gate(client_args* args) {
     pthread_mutex_init(&gate_queue_mutex, NULL);
     sem_init(&clients_in_queue_sem, 0, 0);
 
-    remaining_clients = args->n;
-    pthread_mutex_init(&remaining_clients_mutex, NULL);
+    clients_to_be_served = args->n;
+    pthread_mutex_init(&clients_to_be_served_mutex, NULL);
 
     clients_ticket_booth_access = malloc(args->n * sizeof(sem_t));
+
+    park_employee.toys = args->clients[0]->toys;
+    park_employee.n = args->clients[0]->number_toys;
+    sem_init(&park_employee.employee_perform_action, 0, 0);
+    pthread_create(&park_employee.thread, NULL, park_employee_action, &park_employee);
+
+    clients_to_leave = args->n;
+    pthread_mutex_init(&clients_to_leave_mutex, NULL);
 
     for (int i = 0; i < args->n; i++) {
         sem_init(&clients_ticket_booth_access[i], 0, 0);
@@ -97,6 +138,9 @@ void close_gate(client_args* args) {
         pthread_join(args->clients[i]->thread, NULL);
         sem_destroy(&clients_ticket_booth_access[args->clients[i]->id - 1]);
     }
+    pthread_join(park_employee.thread, NULL);
+
+    sem_destroy(&park_employee.employee_perform_action);
 
     free(clients_ticket_booth_access);
 }

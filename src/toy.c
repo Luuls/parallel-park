@@ -19,6 +19,19 @@ void* turn_on(void* args) {
 
     debug("[ON] - O brinquedo  [%d] foi ligado.\n", self->id); // Altere para o id do brinquedo
 
+    while (TRUE) {
+        sem_wait(&self->toy_perform_actions);
+        
+        pthread_mutex_lock(&clients_to_leave_mutex);
+        if (clients_to_leave == 0) {
+            pthread_mutex_unlock(&clients_to_leave_mutex);
+            break;
+        }
+        pthread_mutex_unlock(&clients_to_leave_mutex);
+
+        debug("[TOY] - Brinquedo [%d] está realizando ações.\n", self->id);
+    }
+
     debug("[OFF] - O brinquedo [%d] foi desligado.\n", self->id); // Altere para o id do brinquedo
 
     pthread_exit(NULL);
@@ -42,4 +55,6 @@ void close_toys(toy_args* args) {
         sem_destroy(&args->toys[i]->clients_wanting_to_ride);
         pthread_join(args->toys[i]->thread, NULL);
     }
+
+    pthread_mutex_destroy(&clients_to_leave_mutex);
 }
