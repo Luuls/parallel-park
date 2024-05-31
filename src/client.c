@@ -12,26 +12,41 @@
 #include "queue.h"
 #include "shared.h"
 
+/*
+Variável local ao arquivo para guardar o funcionário do parque. Esse funcionário
+é responsável por ficar de olho nos clientes que estão saindo do parque. Quando o
+último cliente sai, o funcionário envia um sinal para todos os brinquedos.
+*/
 static park_employee_t park_employee;
 
+// Variável local ao arquivo para manter os dados dos clientes
+static client_args *clients_data = NULL;
 
-// Função onde o cliente compra as moedas para usar os brinquedos
 void buy_coins(client_t* self) {
+    // Função onde o cliente compra as moedas para usar nos brinquedos.
     self->coins = rand() % (MAX_COINS) + 1;
 }
 
-// Função onde o cliente espera a liberação da bilheteria para adentrar no parque.
+
 void wait_ticket(client_t* self) {
-    // Aguarda o atendimento de um funcionário da bilheteria
+    // Função onde o cliente espera a liberação da bilheteria para adentrar no parque.
     sem_wait(&clients_ticket_booth_access[self->id - 1]);
 }
 
 void enjoy_toys(client_t* self) {
+    /*
+    Função onde o cliente aproveita os brinquedos do parque.
+    1 - Escolhemos um brinquedo aleatório.
+    2 - Gastamos uma moeda para brincar.
+    3 - Aguardamos a liberação do brinquedo.
+    Repetimos esses passos até que o cliente não tenha mais moedas.
+    */
+
     while (self->coins > 0) {
-        toy_t* toy = self->toys[rand() % self->number_toys];  // O cliente escolhe um brinquedo aleatório
+        toy_t* toy = self->toys[rand() % self->number_toys];
         debug("[TOY] - Turista [%d] escolheu brincar no brinquedo [%d].\n", self->id, toy->id);
 
-        self->coins--;  // O cliente gasta uma moeda para brincar
+        self->coins--;
         debug("[COINS] - Turista [%d] gastou uma moeda. Restam [%d] moedas.\n", self->id, self->coins);
     
         debug("[WAITING] - Turista [%d] está aguardando para brincar no brinquedo [%d].\n", self->id, toy->id);
@@ -41,24 +56,28 @@ void enjoy_toys(client_t* self) {
 
         sem_post(&toy->toy_perform_actions);  // Sinalizamos para o brinquedo que um cliente quer brincar
 
-        sem_wait(&toy->clients_wanting_to_ride);  // Aguarda a liberação do brinquedo
-        debug("[TOY] - Turista [%d] foi liberado para entrar no brinquedo [%d].\n", self->id, toy->id);
+        sem_wait(&toy->clients_wanting_to_ride);  // Aguarda que o brinquedo o libere para entrar
+        debug("[TOY] - O turista [%d] se divertiu brinquedo [%d].\n", self->id, toy->id);
 
     }
 }
 
-// Função onde o cliente entra na fila da bilheteria
 void queue_enter(client_t* self) {
+    /*
+    Função onde o cliente entra na fila da bilheteria e aguarda ser atendido por um
+    'ticket', após o que ele compra suas moedas.
+    */
+
     pthread_mutex_lock(&gate_queue_mutex);
-    enqueue(gate_queue, self->id);  // O cliente entra na fila do parque
+    enqueue(gate_queue, self->id);
     pthread_mutex_unlock(&gate_queue_mutex);
 
     sem_post(&clients_in_queue_sem);  // Sinalizamos para a bilheteria que um cliente entrou na fila
 
     debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
-    wait_ticket(self);  // Aguarda que alguém na bilheteria o atenda
+    wait_ticket(self);
 
-    buy_coins(self);  // Um funcionário finalmente atende o cliente e ele compra suas moedas
+    buy_coins(self);
     debug("[CASH] - Turista [%d] comprou [%d] moedas.\n", self->id, self->coins);
 }
 
@@ -67,14 +86,24 @@ void leave_park(void) {
 }
 
 void* park_employee_action(void* arg) {
+    /*
+    Função que implementa a thread do funcionário que cuida dos clientes que
+    estão saindo do parque.
+    */
+
     park_employee_t* self = (park_employee_t*) arg;
 
     while (TRUE) {
-        sem_wait(&self->employee_perform_action);  // Aguarda a ação do funcionário
+        sem_wait(&self->employee_perform_action);  // Aguarda o sinal de um cliente que está saindo
 
         pthread_mutex_lock(&clients_to_leave_mutex);
         clients_to_leave--;
         
+        /*
+        Quando o último cliente sair do parque, o funcionário
+        sinaliza as threads dos brinquedos para continuarem,
+        possibilitando que elas finalizem suas execuções
+        */
         if (clients_to_leave == 0) {
             pthread_mutex_unlock(&clients_to_leave_mutex);
 
@@ -89,31 +118,33 @@ void* park_employee_action(void* arg) {
     pthread_exit(NULL);
 }
 
-// Thread que implementa o fluxo do cliente no parque.
+
 void* enjoy(void* arg) {
+    // Thread que implementa o fluxo do cliente no parque.
+
     client_t* self = (client_t*) arg;
 
     queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
 
-    debug("Turista [%d] está aproveitando o parque...\n", self->id);  // O cliente saiu da fila e agora está dentro do parque.
+    debug("Turista [%d] está aproveitando o parque...\n", self->id);
 
     enjoy_toys(self);  // Depois de comprar moedas, o cliente aproveita os brinquedos
 
-    leave_park();
+    leave_park();  // Após as moedas acabarem, o cliente sai do parque
 
     debug("[EXIT] - O turista [%d] saiu do parque.\n", self->id);
     pthread_exit(NULL);
 }
 
-// Essa função recebe como argumento informações sobre o cliente e deve iniciar os clientes.
 void open_gate(client_args* args) {
     /*
-    Função de abertura dos portões, permitindo a entrada de clientes. Inicializamos
-    gate_queue_mutex, clients_in_queue_sem, remaining_clients, remaining_clients_mutex e
-    clients_ticket_booth_access, estruturas que nos ajudarão a sincronizar a entrada dos
-    clientes no parque (ver shared.c).
+    Os portões são finalmente abertos, permitindo a entrada de clientes. Eles são
+    representados por threads. Um funcionário, responsável por ficar de olho nos
+    clientes que estão saindo, também é instanciado. Inicializamos várias estruturas
+    que nos ajudarão a controlar os clientes e o funcionário (ver shared.c).
     */
 
+    clients_data = args;
     pthread_mutex_init(&gate_queue_mutex, NULL);
     sem_init(&clients_in_queue_sem, 0, 0);
 
@@ -122,8 +153,15 @@ void open_gate(client_args* args) {
 
     clients_ticket_booth_access = malloc(args->n * sizeof(sem_t));
 
-    park_employee.toys = args->clients[0]->toys;
-    park_employee.n = args->clients[0]->number_toys;
+    // É possível que nenhum cliente tenha visitado o parque hoje.
+    if (args->n != 0) {
+        park_employee.toys = args->clients[0]->toys;
+        park_employee.n = args->clients[0]->number_toys;
+    }
+    else {
+        debug("[INFO] - Nenhum cliente visitou o parque hoje :(\n")
+    }
+
     sem_init(&park_employee.employee_perform_action, 0, 0);
     pthread_create(&park_employee.thread, NULL, park_employee_action, &park_employee);
 
@@ -136,16 +174,16 @@ void open_gate(client_args* args) {
     }
 }
 
-// Essa função deve finalizar os clientes
-void close_gate(client_args* args) {
+void close_gate() {
    /*
-    Depois que um cliente termina de aproveitar o parque, podemos destruir o semáforo
-    associado a ele.
+    Depois que um cliente termina de aproveitar o parque (isto é, sua thread se
+    encerra), consideramos que ele saiu. O funcionário do parque sai após o último
+    cliente, pois não é mais necessário. Destruímos o que não for mais preciso.
    */
 
-    for (int i = 0; i < args->n; i++) {
-        pthread_join(args->clients[i]->thread, NULL);
-        sem_destroy(&clients_ticket_booth_access[args->clients[i]->id - 1]);
+    for (int i = 0; i < clients_data->n; i++) {
+        pthread_join(clients_data->clients[i]->thread, NULL);
+        sem_destroy(&clients_ticket_booth_access[clients_data->clients[i]->id - 1]);
     }
     pthread_join(park_employee.thread, NULL);
 

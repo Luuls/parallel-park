@@ -128,13 +128,13 @@ int main(int argc, char* argv[]) {
     open_tickets(ticket_args);
 
     // Os turistas saem do parque.
-    close_gate(cli_args);
+    close_gate();
     
     // A bilheteria fecha.
-    close_tickets(ticket_args);
+    close_tickets();
 
     // Desligam os brinquedos.
-    close_toys(toys_args);
+    close_toys();
 
     // Desalocando funcionarios
     finish_tickets(tickets, _config.tickets);
