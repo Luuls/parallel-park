@@ -13,6 +13,9 @@
 
 #define MAX_CAPACITY_TOY    10  // Capacidade maxima dos brinquedos.
 #define MIN_CAPACITY_TOY    5   // Capacidade minima dos brinquedos.
+#define MAX_DURATION_TOY    5   // Duração máxima de um brinquedo.
+#define MIN_DURATION_TOY    1   // Duração mínima de um brinquedo.
+
 #define MAX_COINS           20  // Maximo de moedas que um cliente pode comprar
 
 #define DEBUG               1   //  Alterne (0 or 1) essa macro se voce espera desabilitar todas as mensagens de debug.
@@ -29,10 +32,11 @@ typedef struct toy {
   int id;                   // O id de um brinquedo.
   int capacity;             // A capacidade total de um brinquedo.
   pthread_t thread;         // A thread de um brinquedo.
-  sem_t toy_perform_actions; // Semáforo para permitir que um brinquedo realize ações.
-  sem_t clients_wanting_to_ride; // Semáforo para permitir que um cliente brinque.
-  int clients_to_enter_toy;
-  pthread_mutex_t clients_to_enter_toy_mutex;
+  sem_t toy_perform_actions;  // Semáforo para permitir que um brinquedo realize ações.
+  sem_t clients_wanting_to_ride;  // Semáforo para permitir que um cliente brinque.
+  int clients_to_enter_toy;  // Quantidade de clientes que querem brincar.
+  pthread_mutex_t clients_to_enter_toy_mutex;  // Mutex para clients_to_enter_toy.
+  int duration;         // Duração de um brinquedo.
 } toy_t;
 
 /* Adicione as estruturas de sincronização que achar necessárias */

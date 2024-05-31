@@ -15,6 +15,11 @@
 // Variável local ao arquivo para guardar os dados dos brinquedos
 static toy_args *toys_data = NULL;
 
+void initiate_toy(toy_t* toy) {
+    // Diverte os clientes pela duração de tempo do brinquedo
+    sleep(toy->duration);
+}
+
 void wait_for_more_people(void) {
     // Espera por algum tempo para que mais pessoas cheguem antes de começar
     sleep(1);
@@ -56,6 +61,7 @@ void* turn_on(void* args) {
         }
 
         debug("[TOY] - O brinquedo [%d] está divertindo [%d] pessoas!\n", self->id, clients_enjoying);
+        initiate_toy(self);
 
         pthread_mutex_lock(&self->clients_to_enter_toy_mutex);
         self->clients_to_enter_toy -= clients_enjoying; 
