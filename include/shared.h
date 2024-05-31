@@ -10,9 +10,11 @@ extern sem_t clients_in_queue_sem;
 
 extern sem_t* clients_ticket_booth_access;
 
-extern int remaining_clients;
-extern pthread_mutex_t remaining_clients_mutex;
+extern int clients_to_be_served;
+extern pthread_mutex_t clients_to_be_served_mutex;
 
+extern int clients_to_leave;     // Quantidade de clientes que ainda precisam sair.
+extern pthread_mutex_t clients_to_leave_mutex;  // Mutex para manipular o contador clients_to_leave
 
 /**********************************
  *          ATENÇÃO               *

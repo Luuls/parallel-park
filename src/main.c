@@ -46,6 +46,7 @@ toy_t** init_toys(int number) {
         toys[i] = (toy_t*) malloc(sizeof(toy_t));
         toys[i]->id = i + 1;
         toys[i]->capacity = rand() % (MAX_CAPACITY_TOY - 1) + MIN_CAPACITY_TOY;
+        toys[i]->duration = rand() % (MAX_DURATION_TOY - 1) + MIN_DURATION_TOY;
     }
     return toys;
 }
@@ -128,10 +129,10 @@ int main(int argc, char* argv[]) {
     open_tickets(ticket_args);
 
     // Os turistas saem do parque.
-    close_gate(cli_args);
+    close_gate();
     
     // A bilheteria fecha.
-    close_tickets(ticket_args);
+    close_tickets();
 
     // Desligam os brinquedos.
     close_toys();

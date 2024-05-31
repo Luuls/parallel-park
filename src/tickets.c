@@ -11,26 +11,46 @@
 #include <queue.h>
 #include "shared.h"
 
+#define NO_MORE_CLIENTS -1
 
-// Thread que implementa uma bilheteria
+// Variável local ao arquivo que armazena os dados dos tickets
+static tickets_args *tickets_data = NULL;
+
+int choose_client_to_serve(void) {
+    /*
+    Escolhe um cliente para ser atendido. Se todos os clientes já foram ou serão
+    atendidos (clients_to_be_served == 0), a função retorna NO_MORE_CLIENTS e o
+    funcionário encerra seu turno.
+    */
+
+    pthread_mutex_lock(&clients_to_be_served_mutex);
+    if (clients_to_be_served == 0) {
+        pthread_mutex_unlock(&clients_to_be_served_mutex);
+        return NO_MORE_CLIENTS;
+    }
+    clients_to_be_served--;
+    pthread_mutex_unlock(&clients_to_be_served_mutex);
+
+    sem_wait(&clients_in_queue_sem);  // Aguarda a chegada de um cliente para atendê-lo
+
+    pthread_mutex_lock(&gate_queue_mutex);
+    int id = dequeue(gate_queue);
+    pthread_mutex_unlock(&gate_queue_mutex);
+
+    return id;
+}
+
 void* sell(void* args) {
+    // Rotina que descreve o comportamento de um atendente de bilheteria
+
     ticket_t* ticket = (ticket_t*) args;
     debug("[INFO] - Bilheteria [%d] abriu!\n", ticket->id);
 
     while (TRUE) {
-        pthread_mutex_lock(&remaining_clients_mutex);
-        if (remaining_clients == 0) {  // Os últimos clientes foram/vão ser atendidos. O funcionário encerra seu turno
-            pthread_mutex_unlock(&remaining_clients_mutex);
+        int id = choose_client_to_serve();
+        if (id == NO_MORE_CLIENTS) {
             break;
         }
-        remaining_clients--;
-        pthread_mutex_unlock(&remaining_clients_mutex);
-
-        sem_wait(&clients_in_queue_sem);  // Aguarda a chegada de um cliente na fila
-
-        pthread_mutex_lock(&gate_queue_mutex);
-        int id = dequeue(gate_queue);  // Chama o cliente que está frente da fila para ser atendido
-        pthread_mutex_unlock(&gate_queue_mutex);
 
         sem_post(&clients_ticket_booth_access[id - 1]);  // Atende o cliente
     }
@@ -39,25 +59,24 @@ void* sell(void* args) {
     pthread_exit(NULL);
 }
 
-// Essa função recebe como argumento informações sobre a bilheteria e deve iniciar os atendentes.
 void open_tickets(tickets_args* args) {
-    for (int i = 0; i < args->n; i++) {
+    // Essa função recebe como argumento informações sobre a bilheteria e inicia os atendentes.
+    tickets_data = args;
+    for (int i = 0; i < args->n; i++)
+    {
         pthread_create(&args->tickets[i]->thread, NULL, sell, (void*) args->tickets[i]);
     }
 }
 
 // Essa função deve finalizar a bilheteria
-void close_tickets(tickets_args* args) {
-    /*
-    Assim que as threads dos atendentes terminam, podemos destruir os mutexes e
-    semáforos restantes, pois não precisaremos mais deles.
-    */
+void close_tickets() {
+    // Espera as threads acabarem e destrói mutexes e semáforos.
 
-    for (int i = 0; i < args->n; i++) {
-        pthread_join(args->tickets[i]->thread, NULL);
+    for (int i = 0; i < tickets_data->n; i++) {
+        pthread_join(tickets_data->tickets[i]->thread, NULL);
     }
 
     pthread_mutex_destroy(&gate_queue_mutex);
     sem_destroy(&clients_in_queue_sem);
-    pthread_mutex_destroy(&remaining_clients_mutex);
+    pthread_mutex_destroy(&clients_to_be_served_mutex);
 }
