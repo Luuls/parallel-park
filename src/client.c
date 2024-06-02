@@ -69,11 +69,17 @@ void queue_enter(client_t* self) {
 
     pthread_mutex_lock(&gate_queue_mutex);
     enqueue(gate_queue, self->id);
+#ifndef NDEBUG
+    debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
+#endif
     pthread_mutex_unlock(&gate_queue_mutex);
+
+#ifdef NDEBUG
+    debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
+#endif
 
     sem_post(&clients_in_queue_sem);  // Sinalizamos para a bilheteria que um cliente entrou na fila
 
-    debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
     wait_ticket(self);
 
     buy_coins(self);
@@ -125,7 +131,9 @@ void* enjoy(void* arg) {
 
     queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
 
+#ifndef DEBUG
     debug("Turista [%d] está aproveitando o parque...\n", self->id);
+#endif
 
     enjoy_toys(self);  // Depois de comprar moedas, o cliente aproveita os brinquedos
 
