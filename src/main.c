@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 
     //Iniciando a fila.
     init_main_queue();
-    
+
     // Inicializa os brinquedos.
     toy_t** toys = init_toys(_config.toys);
 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
     ticket_t** tickets = init_tickets(_config.tickets);
     ticket_args->tickets = tickets;
     ticket_args->n = _config.tickets;
-    
+
     // Recebe os argumentos para os brinquedos.
     toys_args->toys = toys;
     toys_args->n = _config.toys;
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
     // Os turistas saem do parque.
     close_gate();
-    
+
     // A bilheteria fecha.
     close_tickets();
 
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
 
     // Desalocando clientes.
     finish_clients(clients, _config.clients);
-    
+
     // Desalocando brinquedos.
     finish_toys(toys, _config.toys);
 
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
     *           SINCRONIZE O FINAL DA EXECUÇÃO DO PROGRAMA PARTIR DESTE PONTO       *
     *                                       EXCEÇÃO                                 *
     *********************************************************************************/
-    
+
     // Sincronize aqui
 
     // Desalocando argumentos.
