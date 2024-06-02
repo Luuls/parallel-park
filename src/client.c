@@ -27,7 +27,6 @@ void buy_coins(client_t* self) {
     self->coins = rand() % (MAX_COINS) + 1;
 }
 
-
 void wait_ticket(client_t* self) {
     // Função onde o cliente espera a liberação da bilheteria para adentrar no parque.
     sem_wait(&clients_ticket_booth_access[self->id - 1]);
@@ -47,8 +46,8 @@ void enjoy_toys(client_t* self) {
         debug("[TOY] - Turista [%d] escolheu brincar no brinquedo [%d].\n", self->id, toy->id);
 
         self->coins--;
-        debug("[COINS] - Turista [%d] gastou uma moeda. Restam [%d] moedas.\n", self->id, self->coins);
-    
+        debug("[CASH] - Turista [%d] gastou uma moeda. Restam [%d] moedas.\n", self->id, self->coins);
+
         debug("[WAITING] - Turista [%d] está aguardando para brincar no brinquedo [%d].\n", self->id, toy->id);
         pthread_mutex_lock(&toy->clients_to_enter_toy_mutex);
         toy->clients_to_enter_toy++;
@@ -70,11 +69,17 @@ void queue_enter(client_t* self) {
 
     pthread_mutex_lock(&gate_queue_mutex);
     enqueue(gate_queue, self->id);
+#ifndef NDEBUG
+    debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
+#endif
     pthread_mutex_unlock(&gate_queue_mutex);
+
+#ifdef NDEBUG
+    debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
+#endif
 
     sem_post(&clients_in_queue_sem);  // Sinalizamos para a bilheteria que um cliente entrou na fila
 
-    debug("[WAITING] - Turista [%d] entrou na fila do portao principal\n", self->id);
     wait_ticket(self);
 
     buy_coins(self);
@@ -82,6 +87,7 @@ void queue_enter(client_t* self) {
 }
 
 void leave_park(void) {
+    // Ao sair do parque, informa isso ao funcionário
     sem_post(&park_employee.employee_perform_action);
 }
 
@@ -98,7 +104,7 @@ void* park_employee_action(void* arg) {
 
         pthread_mutex_lock(&clients_to_leave_mutex);
         clients_to_leave--;
-        
+
         /*
         Quando o último cliente sair do parque, o funcionário
         sinaliza as threads dos brinquedos para continuarem,
@@ -107,7 +113,7 @@ void* park_employee_action(void* arg) {
         if (clients_to_leave == 0) {
             pthread_mutex_unlock(&clients_to_leave_mutex);
 
-            for (int i = 0; i < self->n; i++) {
+            for (int i = 0; i < self->number_toys; i++) {
                 sem_post(&self->toys[i]->toy_perform_actions);
             }
             break;
@@ -118,7 +124,6 @@ void* park_employee_action(void* arg) {
     pthread_exit(NULL);
 }
 
-
 void* enjoy(void* arg) {
     // Thread que implementa o fluxo do cliente no parque.
 
@@ -126,7 +131,9 @@ void* enjoy(void* arg) {
 
     queue_enter(self);  // Para entrar no parque, primeiro passamos pela fila e compramos moedas
 
+#ifdef NDEBUG
     debug("Turista [%d] está aproveitando o parque...\n", self->id);
+#endif
 
     enjoy_toys(self);  // Depois de comprar moedas, o cliente aproveita os brinquedos
 
@@ -156,7 +163,7 @@ void open_gate(client_args* args) {
     // É possível que nenhum cliente tenha visitado o parque hoje.
     if (args->n != 0) {
         park_employee.toys = args->clients[0]->toys;
-        park_employee.n = args->clients[0]->number_toys;
+        park_employee.number_toys = args->clients[0]->number_toys;
     }
     else {
         debug("[INFO] - Nenhum cliente visitou o parque hoje :(\n")

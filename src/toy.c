@@ -38,7 +38,7 @@ void* turn_on(void* args) {
         2 - O funcionário do parque. Nesse caso, o brinquedo sabe que pode desligar.
         */
         sem_wait(&self->toy_perform_actions);
-        
+
         pthread_mutex_lock(&clients_to_leave_mutex);
         if (clients_to_leave == 0) {
             pthread_mutex_unlock(&clients_to_leave_mutex);
@@ -48,14 +48,14 @@ void* turn_on(void* args) {
 
         wait_for_more_people();
 
+        pthread_mutex_lock(&self->clients_to_enter_toy_mutex);
+        int clients_enjoying = self->clients_to_enter_toy;
+        pthread_mutex_unlock(&self->clients_to_enter_toy_mutex);
+
         /*
         O número de pessoas que vão brincar (clients_enjoying) é o mínimo entre
         a capacidade do brinquedo e o número de pessoas que querem brincar.
         */
-        pthread_mutex_lock(&self->clients_to_enter_toy_mutex);
-        int clients_enjoying = self->clients_to_enter_toy;
-        pthread_mutex_unlock(&self->clients_to_enter_toy_mutex);
-    
         if (clients_enjoying > self->capacity) {
             clients_enjoying = self->capacity;
         }

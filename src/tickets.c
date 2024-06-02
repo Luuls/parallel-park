@@ -34,10 +34,17 @@ int choose_client_to_serve(void) {
     sem_wait(&clients_in_queue_sem);  // Aguarda a chegada de um cliente para atendê-lo
 
     pthread_mutex_lock(&gate_queue_mutex);
-    int id = dequeue(gate_queue);
+    int client_id = dequeue(gate_queue);
+#ifndef NDEBUG
+    debug("[INFO] - Turista [%d] está aproveitando o parque...\n", client_id);
+#endif
     pthread_mutex_unlock(&gate_queue_mutex);
 
-    return id;
+#ifdef NDEBUG
+    debug("[INFO] - Turista [%d] está aproveitando o parque...\n", client_id);
+#endif
+
+    return client_id;
 }
 
 void* sell(void* args) {
@@ -47,12 +54,12 @@ void* sell(void* args) {
     debug("[INFO] - Bilheteria [%d] abriu!\n", ticket->id);
 
     while (TRUE) {
-        int id = choose_client_to_serve();
-        if (id == NO_MORE_CLIENTS) {
+        int client_id = choose_client_to_serve();
+        if (client_id == NO_MORE_CLIENTS) {
             break;
         }
 
-        sem_post(&clients_ticket_booth_access[id - 1]);  // Atende o cliente
+        sem_post(&clients_ticket_booth_access[client_id - 1]);  // Atende o cliente
     }
 
     debug("[INFO] - Bilheteria [%d] fechou!\n", ticket->id);

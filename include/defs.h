@@ -62,7 +62,7 @@ typedef struct {
 
 typedef struct {
   toy_t** toys;             // Array de brinquedos.
-  int n;                    // Quantidade de brinquedos.
+  int number_toys;                    // Quantidade de brinquedos.
   sem_t employee_perform_action; // Semáforo para permitir que um funcionário realize ações.
   pthread_t thread;           // A thread do funcionário.
 } park_employee_t;
